@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 # JobSpy import (pip package name is python-jobspy; module import is jobspy)
-from jobspy import scrape_jobs
+from jobspy import scrape_jobs, Site
 
 # ---- Config via environment variables (with safe defaults) ----
 KEYWORDS       = os.getenv("JOB_KEYWORDS", "DevOps Engineer")
@@ -12,7 +12,7 @@ LOCATION       = os.getenv("JOB_LOCATION", "Bengaluru, India")
 RESULTS_WANTED = int(os.getenv("RESULTS_WANTED", "50"))
 HOURS_OLD      = int(os.getenv("HOURS_OLD", "24"))
 SITES_RAW      = os.getenv("JOB_SITES", "linkedin,indeed")
-SITES          = [s.strip().lower() for s in SITES_RAW.split(",") if s.strip()]
+REQ_SITES = [s.strip().lower() for s in SITES_RAW.split(",") if s.strip()]
 
 # If Google Jobs is included, JobSpy prefers a google_search_term param.
 valid_site_names = {s.name.lower() for s in Site}  # e.g., {'linkedin','indeed',...}
