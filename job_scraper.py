@@ -26,7 +26,6 @@ jobs_df = scrape_jobs(
     search_term=KEYWORDS,
     location=LOCATION,
     results_wanted=RESULTS_WANTED,
-    hours_old=HOURS_OLD,
     **google_kwargs
 )
 
