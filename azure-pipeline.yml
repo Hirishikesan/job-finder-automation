@@ -29,6 +29,9 @@ stages:
         pip install --upgrade Cython
         pip install --only-binary=:all: -r requirements.txt
       displayName: "Install dependencies"
+    - script: |
+        python job_scraper.py
+      displayName: "Run scraper"
       env:
         GITHUB_TOKEN: $(GH_TOKEN)
 
