@@ -11,13 +11,19 @@ KEYWORDS       = os.getenv("JOB_KEYWORDS", "DevOps Engineer")
 LOCATION       = os.getenv("JOB_LOCATION", "Bengaluru, India")
 RESULTS_WANTED = int(os.getenv("RESULTS_WANTED", "50"))
 HOURS_OLD      = int(os.getenv("HOURS_OLD", "24"))
-SITES_RAW      = os.getenv("JOB_SITES", "linkedin,indeed,google")
+SITES_RAW      = os.getenv("JOB_SITES", "linkedin,indeed")
 SITES          = [s.strip().lower() for s in SITES_RAW.split(",") if s.strip()]
 
 # If Google Jobs is included, JobSpy prefers a google_search_term param.
-google_kwargs = {}
-if "google" in SITES:
-    google_kwargs["google_search_term"] = KEYWORDS
+valid_site_names = {s.name.lower() for s in Site}  # e.g., {'linkedin','indeed',...}
+SITES = [s for s in REQ_SITES if s in valid_site_names]
+unsupported = [s for s in REQ_SITES if s not in valid_site_names]
+
+if unsupported:
+    print(f"⚠️ Skipping unsupported site(s) per installed jobspy: {unsupported}")
+if not SITES:
+    raise SystemExit("❌ No valid sites to scrape. Update JOB_SITES or upgrade jobspy.")
+
 
 # ---- Scrape ----
 print(f"Searching: '{KEYWORDS}' in '{LOCATION}' | sites={SITES} | last {HOURS_OLD}h | max {RESULTS_WANTED}")
