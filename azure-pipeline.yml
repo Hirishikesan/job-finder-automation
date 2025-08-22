@@ -21,6 +21,8 @@ stages:
       inputs:
         versionSpec: '3.x'
         addToPath: true
+      env:
+        GITHUB_TOKEN: $(GH_TOKEN)
     - script: |
         python --version
         pip install --upgrade pip
