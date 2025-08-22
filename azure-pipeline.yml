@@ -28,6 +28,8 @@ stages:
         pip install --upgrade pip
         pip install -r requirements.txt
       displayName: "Install dependencies"
+      env:
+        GITHUB_TOKEN: $(GH_TOKEN)
 
 - stage: Scrape
   displayName: "Run Job Scraper"
