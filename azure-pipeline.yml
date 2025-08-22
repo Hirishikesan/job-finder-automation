@@ -1,13 +1,12 @@
 trigger:
 - main
 schedules:
-- cron: "0 0 9 * * *"
+- cron: "0 10 * * *"
   displayName: "Daily 9:00 IST"
   branches:
     include:
     - main
   always: true
-  timeZone: "Asia/Kolkata"
 pool:
   name: "Default"
 
@@ -30,7 +29,7 @@ stages:
 
 - stage: Scrape
   displayName: "Run Job Scraper"
-  dependOn: Setup
+  dependsOn: Setup
   jobs:
   - job: RunScraper
     steps:
@@ -53,7 +52,7 @@ stages:
     - task: PublishPipelineArtifact@1
       displayName: "Publish 'reports' folder"
       inputs:
-        targetPath: "reports"
+        targetPath: "$(Build.SourcesDirectory)/reports"
         artifact: "job-reports"
 
 - stage: Notify
@@ -64,7 +63,13 @@ stages:
     steps:
     - task: DownloadPipelineArtifact@2
       displayName: "Download 'job-reports' artifact"
-      workingDirectory: "$(Pipeline.Workspace)/downloaded/job-reports"
+      inputs:
+        artifact: "job-reports"
+        path: "$(Pipeline.Workspace)/downloaded"
+    - script: |
+        python send_mail.py
+      displayName: "Send Email with attachment"
+      workingDirectory: "$(Pipeline.Workspace)/downloaded"
       env:
         SENDER_EMAIL: $(SENDER_EMAIL)
         SENDER_PASSWORD: $(SENDER_PASSWORD)
