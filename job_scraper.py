@@ -25,8 +25,7 @@ jobs_df = scrape_jobs(
     site_name=SITES,
     search_term=KEYWORDS,
     location=LOCATION,
-    results_wanted=RESULTS_WANTED,
-    **google_kwargs
+    results_wanted=RESULTS_WANTED
 )
 
 if jobs_df is None or jobs_df.empty:
