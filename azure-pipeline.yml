@@ -1,88 +1,31 @@
 trigger:
-- main
-schedules:
-- cron: "0 10 * * *"
-  displayName: "Daily 9:00 IST"
-  branches:
-    include:
-    - main
-  always: true
+- main   # change branch if needed
+
 pool:
-  name: "Default"
+  name: 'Default'
 
-stages:
+steps:
+# Step 1: Use Python
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+  displayName: 'Set up Python'
 
-- stage: Setup
-  displayName: "Setup Python Environment"
-  jobs:
-  - job: Install
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.x'
-        addToPath: true
-      env:
-        GITHUB_TOKEN: $(GH_TOKEN)
-    - script: |
-        python -m pip install --upgrade pip setuptools wheel build
-      displayName: "Upgrade pip tools"
-    - script: |
-        pip install --only-binary=:all: -r requirements.txt || pip install -r requirements.txt
-      displayName: "Install Python dependencies"
-    - script: |
-        python job_scraper.py
-      displayName: "Run scraper"
-      env:
-        GITHUB_TOKEN: $(GH_TOKEN)
+# Step 2: Install dependencies
+- script: |
+    python -m pip install --upgrade pip
+    pip install jobspy pandas
+  displayName: 'Install Python packages'
 
-- stage: Scrape
-  displayName: "Run Job Scraper"
-  dependsOn: Setup
-  jobs:
-  - job: RunScraper
-    steps:
-    - script: |
-        python job_scraper.py
-      displayName: "Execute job_scraper.py"
-      env:
-        JOB_KEYWORDS: $(JOB_KEYWORDS)
-        JOB_LOCATION: $(JOB_LOCATION)
-        JOB_SITES: $(JOB_SITES)
-        RESULTS_WANTED: $(RESULTS_WANTED)
-        HOURS_OLD: $(HOURS_OLD)
+# Step 3: Run job scraper
+- script: |
+    python job_scraper.py
+  displayName: 'Run Job Scraper'
 
-- stage: Publish
-  displayName: "Publish Job Report"
-  dependsOn: Scrape
-  jobs:
-  - job: PublishArtifacts
-    steps:
-    - task: PublishPipelineArtifact@1
-      displayName: "Publish 'reports' folder"
-      inputs:
-        targetPath: "$(Build.SourcesDirectory)/reports"
-        artifact: "job-reports"
-
-- stage: Notify
-  displayName: "Email the Job Report"
-  dependsOn: Publish
-  jobs:
-  - job: SendMail
-    steps:
-    - task: DownloadPipelineArtifact@2
-      displayName: "Download 'job-reports' artifact"
-      inputs:
-        artifact: "job-reports"
-        path: "$(Pipeline.Workspace)/downloaded"
-    - script: |
-        python send_mail.py
-      displayName: "Send Email with attachment"
-      workingDirectory: "$(Pipeline.Workspace)/downloaded"
-      env:
-        SENDER_EMAIL: $(SENDER_EMAIL)
-        SENDER_PASSWORD: $(SENDER_PASSWORD)
-        RECEIVER_EMAIL: $(RECEIVER_EMAIL)
-        SMTP_SERVER: $(SMTP_SERVER)
-        SMTP_PORT: $(SMTP_PORT)
-        MAIL_SUBJECT: $(MAIL_SUBJECT)
-        MAIL_BODY: $(MAIL_BODY)
+# Step 4: Publish CSV artifact
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: 'jobs.csv'
+    ArtifactName: 'job_results'
+    publishLocation: 'Container'
+  displayName: 'Publish scraped jobs CSV'
