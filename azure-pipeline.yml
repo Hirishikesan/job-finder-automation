@@ -27,7 +27,7 @@ stages:
         python -m pip install --upgrade pip 
         pip install --upgrade setuptools wheel build
         pip install --upgrade Cython
-        pip install --no-cache-dir -r requirements.txt
+        pip install --only-binary=:all: -r requirements.txt
       displayName: "Install dependencies"
       env:
         GITHUB_TOKEN: $(GH_TOKEN)
